@@ -9,22 +9,52 @@ import { useConfig } from '../contexts/ConfigContext';
 import { ScrollReveal } from '../components/ScrollReveal';
 
 export const Home: React.FC = () => {
+  const [loading, setLoading] = useState(true);
   const [recentBlogs, setRecentBlogs] = useState<BlogPost[]>([]);
   const [featuredServices, setFeaturedServices] = useState<Service[]>([]);
-  const [homeContent, setHomeContent] = useState<HomeContent>(getHomeContent());
+  const [homeContent, setHomeContent] = useState<HomeContent | null>(null);
   const [stats, setStats] = useState<HomeStat[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   
   const { getWhatsappLink } = useConfig();
 
   useEffect(() => {
-    setRecentBlogs(getRecentBlogs(3));
-    // ONLY SHOW MAIN SERVICES (INDUK)
-    setFeaturedServices(getMainServices().slice(0, 3));
-    setHomeContent(getHomeContent());
-    setStats(getHomeStats());
-    setTestimonials(getTestimonials());
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [blogsData, servicesData, contentData, statsData, testiData] = await Promise.all([
+          getRecentBlogs(3),
+          getMainServices(),
+          getHomeContent(),
+          getHomeStats(),
+          getTestimonials()
+        ]);
+
+        setRecentBlogs(blogsData);
+        setFeaturedServices(servicesData.slice(0, 3));
+        setHomeContent(contentData);
+        setStats(statsData);
+        setTestimonials(testiData);
+      } catch (error) {
+        console.error("Failed to load home data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
+
+  if (loading || !homeContent) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-slate-500 animate-pulse">Memuat Konten...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-hidden">
@@ -74,7 +104,7 @@ export const Home: React.FC = () => {
                 </div>
             </ScrollReveal>
             
-            {/* Trusted By (With Toggle and Images) */}
+            {/* Trusted By */}
             {homeContent.showTrustedBrands && homeContent.trustedBrands.length > 0 && (
                 <div className="mt-16 pt-8 border-t border-slate-100 dark:border-slate-800/50">
                     <p className="text-sm text-slate-500 font-medium mb-6 uppercase tracking-widest">Dipercaya oleh 100+ Bisnis</p>
@@ -139,7 +169,6 @@ export const Home: React.FC = () => {
                     <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-6">
                     {feature.shortDescription}
                     </p>
-                    {/* UPDATED LINK: Point to root slug */}
                     <Link to={`/${feature.slug}`} className="inline-flex items-center text-blue-600 font-semibold group-hover:translate-x-2 transition-transform">
                         Pelajari Lebih Lanjut <Icons.ArrowRight size={18} className="ml-2" />
                     </Link>
@@ -155,7 +184,8 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Process Section (How It Works) - Updated Dynamic */}
+      {/* Process Section */}
+      {homeContent.howItWorks && homeContent.howItWorks.length > 0 && (
       <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10"></div>
          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -167,7 +197,6 @@ export const Home: React.FC = () => {
              </ScrollReveal>
              
              <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
-                 {/* Connecting Line (Desktop) */}
                  <div className="hidden md:block absolute top-12 left-0 w-full h-0.5 bg-slate-700 z-0"></div>
 
                  {homeContent.howItWorks.map((item, i) => (
@@ -185,6 +214,7 @@ export const Home: React.FC = () => {
              </div>
          </div>
       </section>
+      )}
 
       {/* Testimonials */}
       <section className="py-24 bg-white dark:bg-slate-950">
@@ -217,7 +247,7 @@ export const Home: React.FC = () => {
           </div>
       </section>
 
-      {/* Recent Blog (UPDATED WITH THUMBNAIL) */}
+      {/* Recent Blog */}
       <section className="py-24 bg-slate-50 dark:bg-slate-900/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <ScrollReveal>

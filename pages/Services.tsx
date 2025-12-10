@@ -1,5 +1,4 @@
 
-
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getMainServices } from '../services/dataService';
@@ -9,12 +8,26 @@ import { ScrollReveal } from '../components/ScrollReveal';
 
 export const Services: React.FC = () => {
   const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     document.title = "Layanan Kami - MazmoDev";
-    // Only load Main services (hide those with parentServiceId)
-    setServices(getMainServices());
+    const fetch = async () => {
+      setLoading(true);
+      const data = await getMainServices();
+      setServices(data);
+      setLoading(false);
+    };
+    fetch();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+         <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-slate-50 dark:bg-slate-950 min-h-screen py-20 transition-colors">
@@ -31,7 +44,6 @@ export const Services: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, idx) => (
             <ScrollReveal key={service.id} delay={idx * 100} className="h-full">
-                {/* UPDATED LINK: Point to root slug for SEO structure (domain.com/jasa-web) */}
                 <Link 
                 to={`/${service.slug}`} 
                 className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 p-8 hover:-translate-y-2 transition-transform duration-300 group block h-full"

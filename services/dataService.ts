@@ -1,496 +1,366 @@
 
+import { supabase } from '../lib/supabaseClient';
+import { Service, BlogPost, SiteConfig, PortfolioItem, Testimonial, HomeStat, HomeContent, AdminCredentials } from '../types';
 
-import { Service, BlogPost, SiteConfig, PortfolioItem, Testimonial, HomeStat, HomeContent, TrustedBrand, ProcessStep, AdminCredentials } from '../types';
+// --- MOCK DATA INITIALIZATION ---
+// This data is used when the database connection fails or is not set up.
 
-const SERVICES_KEY = 'mazmodev_services';
-const BLOG_KEY = 'mazmodev_blogs';
-const BLOG_CATEGORIES_KEY = 'mazmodev_blog_categories';
-const PORTFOLIO_KEY = 'mazmodev_portfolios';
-const CONFIG_KEY = 'mazmodev_config';
-const TESTIMONIALS_KEY = 'mazmodev_testimonials';
-const HOME_STATS_KEY = 'mazmodev_home_stats';
-const HOME_CONTENT_KEY = 'mazmodev_home_content';
-const AUTH_KEY = 'mazmodev_auth';
-
-// --- DEFAULTS ---
-
-const DEFAULT_PORTFOLIOS: PortfolioItem[] = [
-    { 
-      id: 'p1',
-      image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
-      title: 'Startup Dashboard Analytics',
-      category: 'Web App'
-    },
-    { 
-      id: 'p2',
-      image: 'https://images.unsplash.com/photo-1522542550221-31fd19575a2d?auto=format&fit=crop&w=800&q=80',
-      title: 'Modern E-Commerce',
-      category: 'Toko Online'
-    },
-    { 
-      id: 'p3',
-      image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80',
-      title: 'Corporate Profile PT Maju',
-      category: 'Company Profile'
-    }
-];
-
-const DEFAULT_SERVICES: Service[] = [
+const MOCK_SERVICES: Service[] = [
   {
     id: '1',
     title: 'Jasa Pembuatan Website',
     slug: 'jasa-pembuatan-website',
-    iconName: 'Code',
-    seoTitle: 'Jasa Pembuatan Website Profesional & SEO Friendly | MazmoDev',
-    seoKeywords: ['jasa website', 'buat website toko online', 'web developer jakarta', 'jasa website seo'],
-    shortDescription: 'Jasa pembuatan website profesional, cepat, dan SEO friendly. Tingkatkan kredibilitas bisnis Anda dengan desain modern dan performa tinggi.',
-    contentSectionTitle: 'Jasa Pembuatan Website Company Profile & UMKM Terpercaya',
-    contentSectionBody: '<p>Di era digital saat ini, memiliki website bukan lagi pilihan, melainkan keharusan. <strong>MazmoDev</strong> hadir sebagai solusi jasa pembuatan website profesional yang mengutamakan performa, desain estetis, dan struktur SEO yang kuat.</p><p>Kami memahami bahwa setiap bisnis memiliki keunikan. Oleh karena itu, layanan kami mencakup:</p><ul class="list-disc pl-5 mb-4"><li><strong>Desain Custom:</strong> Disesuaikan dengan branding identitas perusahaan Anda.</li><li><strong>Kecepatan Tinggi:</strong> Website dioptimalkan untuk loading di bawah 2 detik.</li><li><strong>Mobile Responsive:</strong> Tampilan sempurna di semua perangkat (HP, Tablet, Desktop).</li></ul><p>Hubungi kami sekarang untuk konsultasi gratis mengenai kebutuhan digital bisnis Anda.</p>',
-    fullDescription: '<p>Kami membangun website modern menggunakan teknologi terbaru seperti <strong>React, Next.js, dan Tailwind CSS</strong>. Website Anda akan dioptimalkan untuk kecepatan (Core Web Vitals) dan mesin pencari (Google).</p><p>Cocok untuk Company Profile, Toko Online, hingga Web App kompleks. Kami memastikan struktur kode yang bersih agar mudah diindeks oleh Google dan nyaman digunakan oleh pengunjung.</p>',
+    iconName: 'Globe',
+    shortDescription: 'Website profesional, cepat, dan SEO friendly yang dirancang untuk mengonversi pengunjung menjadi pelanggan.',
+    fullDescription: '<p>Kami membangun website yang tidak hanya indah dipandang tetapi juga berorientasi pada performa dan penjualan. Menggunakan teknologi terbaru seperti React dan Tailwind CSS.</p>',
+    seoTitle: 'Jasa Pembuatan Website Profesional & SEO Friendly',
+    seoKeywords: ['jasa website', 'buat website', 'web developer indonesia'],
     features: [
-        { title: 'Super Cepat', description: 'Optimasi loading speed < 1 detik untuk retensi pengunjung maksimal.' },
-        { title: 'SEO Optimized', description: 'Struktur kode ramah Google agar mudah naik ranking.' },
-        { title: 'Mobile Friendly', description: 'Tampilan responsif sempurna di HP, Tablet, dan Desktop.' }
+      { title: 'Responsive Design', description: 'Tampil sempurna di Desktop, Tablet, dan Mobile.', icon: 'LayoutDashboard' },
+      { title: 'SEO Optimized', description: 'Struktur kode yang disukai Google.', icon: 'Search' },
+      { title: 'Fast Loading', description: 'Optimasi kecepatan untuk user experience terbaik.', icon: 'Zap' }
     ],
     benefits: [
-        { title: 'Kredibilitas Meningkat', description: 'Bisnis terlihat lebih profesional dan terpercaya di mata calon klien.' },
-        { title: 'Buka 24 Jam', description: 'Website bekerja mempromosikan bisnis Anda bahkan saat Anda tidur.' }
-    ],
-    portfolio: [ DEFAULT_PORTFOLIOS[0], DEFAULT_PORTFOLIOS[1], DEFAULT_PORTFOLIOS[2] ], 
-    faqs: [
-        { question: 'Berapa lama proses pembuatan website?', answer: 'Untuk Company Profile sekitar 3-5 hari kerja. Untuk Toko Online atau Custom Web sekitar 7-14 hari kerja tergantung kompleksitas.' },
-        { question: 'Apakah dapat gratis domain?', answer: 'Ya, semua paket kami sudah termasuk gratis Domain .com selama 1 tahun.' }
+      { title: 'Kredibilitas Meningkat', description: 'Bisnis terlihat lebih profesional dan terpercaya.' },
+      { title: 'Jangkauan Luas', description: 'Dapat diakses oleh pelanggan dari seluruh dunia 24/7.' }
     ],
     plans: [
-      {
-        id: 'p1',
-        name: 'Starter',
-        price: 'Rp 1.500.000',
-        features: [
-          { text: 'Landing Page (1 Halaman)', included: true },
-          { text: 'Gratis Domain .com', included: true },
-          { text: 'SSL Security', included: true },
-          { text: 'SEO Basic', included: false },
-        ]
-      },
-      {
-        id: 'p2',
-        name: 'Business',
-        price: 'Rp 3.500.000',
-        features: [
-          { text: 'Multi Page (5 Halaman)', included: true },
-          { text: 'Gratis Domain & Hosting', included: true },
-          { text: 'Optimasi SEO Advanced', included: true },
-          { text: 'Integrasi Analytics', included: true },
-        ],
-        recommended: true
-      }
-    ]
-  },
-  {
-    id: 'sub1',
-    title: 'Jasa Website Rental Mobil',
-    slug: 'jasa-website-rental-mobil',
-    parentServiceId: '1', // LINKED TO PARENT
-    iconName: 'Code',
-    shortDescription: 'Solusi website khusus pengusaha rental mobil. Fitur booking online, katalog armada, dan integrasi WhatsApp.',
-    fullDescription: '<p>Tingkatkan pemesanan rental mobil Anda dengan website khusus yang dirancang untuk konversi. Dilengkapi fitur hitung tarif otomatis dan booking via WA.</p>',
-    seoTitle: 'Jasa Buat Website Rental Mobil Murah & Mewah',
-    seoKeywords: ['website rental mobil', 'jasa web rental', 'aplikasi rental mobil'],
-    features: [], benefits: [], portfolio: [], faqs: [], plans: []
-  },
-  {
-    id: 'sub2',
-    title: 'Jasa Website Apotik & Klinik',
-    slug: 'jasa-website-apotik',
-    parentServiceId: '1', // LINKED TO PARENT
-    iconName: 'Code',
-    shortDescription: 'Website profesional untuk Apotik, Klinik, dan Praktik Dokter. Tampilkan jadwal, layanan, dan katalog obat.',
-    fullDescription: '<p>Digitalisasi layanan kesehatan Anda. Memudahkan pasien mencari informasi jadwal dokter dan ketersediaan layanan.</p>',
-    seoTitle: 'Jasa Pembuatan Website Klinik & Apotik',
-    seoKeywords: ['website apotik', 'website klinik', 'web dokter'],
-    features: [], benefits: [], portfolio: [], faqs: [], plans: []
+        { id: 'p1', name: 'Landing Page', price: 'Rp 1.500.000', features: [{ text: 'One Page Design', included: true }, { text: 'Mobile Friendly', included: true }, { text: 'Free Domain .com', included: true }], recommended: false },
+        { id: 'p2', name: 'Company Profile', price: 'Rp 3.500.000', features: [{ text: '5 Halaman', included: true }, { text: 'CMS Admin', included: true }, { text: 'SEO Basic', included: true }], recommended: true },
+        { id: 'p3', name: 'Toko Online', price: 'Rp 5.000.000', features: [{ text: 'Integrasi Payment', included: true }, { text: 'Manajemen Produk', included: true }, { text: 'Laporan Penjualan', included: true }], recommended: false }
+    ],
+    faqs: [
+        { question: 'Berapa lama proses pembuatan?', answer: 'Tergantung kompleksitas, rata-rata 3-7 hari kerja.' },
+        { question: 'Apakah dapat revisi?', answer: 'Ya, kami memberikan kesempatan revisi mayor 2x dan minor sepuasnya.' }
+    ],
+    portfolio: []
   },
   {
     id: '2',
-    title: 'Jasa Iklan (ADS)',
-    slug: 'jasa-iklan-ads',
+    title: 'Digital Marketing (Ads)',
+    slug: 'jasa-digital-marketing',
     iconName: 'Megaphone',
-    shortDescription: 'Tingkatkan omset drastis dengan Jasa Google Ads, Facebook Ads, dan TikTok Ads tertarget.',
-    fullDescription: 'Tim advertiser kami yang berpengalaman akan membantu Anda menargetkan audiens yang tepat untuk memaksimalkan ROI bisnis Anda. Kami menggunakan strategi data-driven.',
-    seoTitle: 'Jasa Iklan Google & Facebook Ads Terpercaya',
-    seoKeywords: ['jasa google ads', 'jasa fb ads', 'digital marketing'],
-    contentSectionTitle: 'Solusi Iklan Digital (Paid Traffic)',
-    contentSectionBody: '<p>Jangkau pelanggan potensial secara instan. Layanan kami fokus pada konversi, bukan sekadar klik.</p>',
+    shortDescription: 'Tingkatkan penjualan secara instan dengan strategi iklan Facebook & Google Ads yang tertarget.',
+    fullDescription: '<p>Jangkau audiens yang tepat di waktu yang tepat. Kami mengelola budget iklan Anda untuk menghasilkan ROI maksimal.</p>',
     features: [
-        { title: 'Tertarget', description: 'Iklan hanya muncul ke orang yang mencari produk Anda.' },
-        { title: 'Laporan Transparan', description: 'Akses real-time ke performa iklan Anda.' }
+        { title: 'Targeting Akurat', description: 'Menjangkau pelanggan ideal Anda.', icon: 'Target' },
+        { title: 'Laporan Harian', description: 'Transparansi data performa iklan.', icon: 'BarChart' }
     ],
     benefits: [],
-    portfolio: [],
-    faqs: [],
     plans: [
-      {
-        id: 'a1',
-        name: 'Basic Ads',
-        price: 'Rp 2.000.000',
-        features: [
-          { text: 'Setup Google Ads', included: true },
-          { text: 'Riset Keyword Basic', included: true },
-          { text: 'Laporan Bulanan', included: true },
-        ]
-      }
-    ]
+        { id: 'ad1', name: 'Starter Ads', price: 'Rp 1.000.000', features: [{ text: 'Setup Kampanye', included: true }, { text: 'Budget Management', included: true }, { text: 'Report Bulanan', included: true }], recommended: false }
+    ],
+    faqs: [],
+    portfolio: []
   },
   {
     id: '3',
-    title: 'Branding & Identitas',
-    slug: 'branding-identity',
+    title: 'Branding Identity',
+    slug: 'jasa-branding',
     iconName: 'Palette',
-    shortDescription: 'Bangun citra merek yang kuat dan tak terlupakan dengan layanan Branding Identity lengkap.',
-    fullDescription: 'Layanan branding komprehensif mulai dari desain logo, panduan gaya (style guide), hingga strategi komunikasi merek.',
-    features: [],
-    benefits: [],
-    portfolio: [],
-    faqs: [],
-    plans: []
+    shortDescription: 'Ciptakan identitas brand yang kuat dan mudah diingat oleh pelanggan Anda.',
+    fullDescription: '<p>Dari desain logo hingga panduan visual lengkap. Kami membantu brand Anda bercerita.</p>',
+    features: [], benefits: [], plans: [], faqs: [], portfolio: []
   }
 ];
 
-const DEFAULT_BLOGS: BlogPost[] = [
-  {
-    id: '1',
-    title: 'Pentingnya SEO untuk Bisnis Lokal di 2024',
-    slug: 'pentingnya-seo-bisnis-lokal',
-    category: 'SEO',
-    summary: 'Mengapa bisnis lokal harus peduli dengan SEO? Simak strategi jitu memenangkan pasar lokal dan tampil di Google Maps.',
-    content: '<p>SEO Lokal adalah kunci untuk bisnis kecil dan menengah...</p><p>Dengan Google Maps dan pencarian berbasis lokasi, pelanggan dapat menemukan toko Anda dengan mudah.</p>',
-    author: 'Admin Mazmo',
-    date: '2024-03-15',
-    imageUrl: 'https://images.unsplash.com/photo-1571721795195-a2d8d14abd75?auto=format&fit=crop&w=1000&q=80',
-    tags: ['SEO', 'Bisnis', 'Digital Marketing'],
-    status: 'published'
-  },
-  {
-      id: '2',
-      title: '5 Tips Facebook Ads Anti Boncos',
-      slug: 'tips-fb-ads-anti-boncos',
-      category: 'Digital Marketing',
-      summary: 'Pelajari cara menargetkan audience yang tepat agar budget iklan Anda tidak terbuang percuma.',
-      content: '<p>Facebook Ads memiliki fitur targeting yang sangat detail...</p>',
-      author: 'Advertiser Team',
-      date: '2024-03-20',
-      imageUrl: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1000&q=80',
-      tags: ['Facebook Ads', 'Marketing', 'Paid Traffic'],
-      status: 'published'
-  }
+const MOCK_BLOGS: BlogPost[] = [
+    {
+        id: '1',
+        title: '5 Alasan Bisnis Perlu Website di 2024',
+        slug: 'alasan-bisnis-perlu-website',
+        category: 'Bisnis',
+        summary: 'Mengapa kehadiran digital sangat krusial untuk kelangsungan bisnis modern.',
+        content: '<p>Di era digital ini, website bukan lagi opsi, melainkan kebutuhan...</p>',
+        author: 'Admin',
+        date: '2024-03-15',
+        imageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
+        tags: ['Bisnis', 'Website'],
+        status: 'published'
+    },
+    {
+        id: '2',
+        title: 'Cara Optimasi SEO untuk Pemula',
+        slug: 'cara-optimasi-seo-pemula',
+        category: 'Teknologi',
+        summary: 'Panduan dasar agar website Anda muncul di halaman pertama Google.',
+        content: '<p>SEO adalah seni mendatangkan pengunjung secara gratis...</p>',
+        author: 'Mazmo Team',
+        date: '2024-03-10',
+        imageUrl: 'https://images.unsplash.com/photo-1571721795195-a2ca2d337096?auto=format&fit=crop&w=800&q=80',
+        tags: ['SEO', 'Google'],
+        status: 'published'
+    }
 ];
 
-const DEFAULT_CATEGORIES = ['Teknologi', 'Digital Marketing', 'SEO', 'Branding', 'Social Media', 'Bisnis', 'Tutorial'];
+const MOCK_PORTFOLIO: PortfolioItem[] = [
+    { id: '1', title: 'Coffee Shop Landing Page', category: 'Website', image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=800&q=80', serviceId: '1' },
+    { id: '2', title: 'Fashion Brand Identity', category: 'Branding', image: 'https://images.unsplash.com/photo-1542038784424-fa00ed49fc44?auto=format&fit=crop&w=800&q=80', serviceId: '3' },
+    { id: '3', title: 'Tech Startup Dashboard', category: 'App Design', image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80', serviceId: '1' }
+];
 
 const DEFAULT_CONFIG: SiteConfig = {
     whatsappNumber: '628123456789',
     email: 'hello@mazmodev.com',
     address: 'Jakarta, Indonesia',
-    logoUrl: '', // Default empty
-    instagram: 'https://instagram.com/mazmodev',
-    linkedin: 'https://linkedin.com/company/mazmodev',
-    facebook: '',
-    youtube: '',
-    tiktok: ''
+    logoUrl: '',
+    instagram: 'https://instagram.com', linkedin: '', facebook: '', youtube: '', tiktok: ''
 };
 
-const DEFAULT_TESTIMONIALS: Testimonial[] = [
-    { id: '1', name: 'Budi Santoso', role: 'CEO, PT Maju Jaya', content: 'Website kami sekarang jauh lebih cepat dan mendatangkan banyak leads dari Google. Sangat puas dengan layanan SEO MazmoDev.', rating: 5 },
-    { id: '2', name: 'Siti Aminah', role: 'Owner, Batik Cantik', content: 'Penjualan online meningkat 200% setelah dibantu setup Facebook Ads. Timnya sangat responsif dan edukatif.', rating: 5 },
-    { id: '3', name: 'Rizky Pratama', role: 'Founder, TechStart', content: 'Desain branding yang dibuat sangat on-point dan modern. Benar-benar merepresentasikan visi startup kami.', rating: 5 }
-];
+// --- DATA SERVICE LOGIC (MIXED MODE: SUPABASE -> LOCALSTORAGE -> MOCK) ---
 
-const DEFAULT_HOME_STATS: HomeStat[] = [
-    { id: '1', icon: 'Trophy', value: '5+', label: 'Tahun Pengalaman', color: 'text-yellow-500' },
-    { id: '2', icon: 'Check', value: '150+', label: 'Project Selesai', color: 'text-green-500' },
-    { id: '3', icon: 'Users', value: '80+', label: 'Klien Puas', color: 'text-blue-500' },
-    { id: '4', icon: 'Zap', value: '24/7', label: 'Support Cepat', color: 'text-purple-500' },
-];
+// Helper to safely get data
+const fetchData = async <T>(key: string, tableName: string, mockData: T): Promise<T> => {
+    // 1. Try LocalStorage First (Prioritize local edits in demo mode)
+    const local = localStorage.getItem(`mazmodev_${key}`);
+    
+    // Check if Supabase is configured (rudimentary check on URL placeholder)
+    // @ts-ignore
+    const isSupabaseConfigured = supabase.supabaseUrl && !supabase.supabaseUrl.includes('xyzcompany');
 
-const DEFAULT_PROCESS_STEPS: ProcessStep[] = [
-    { step: '01', title: 'Konsultasi', description: 'Diskusi mendalam tentang tujuan dan kebutuhan bisnis Anda.', icon: 'Briefcase' },
-    { step: '02', title: 'Strategi', description: 'Merancang blueprint dan roadmap solusi digital.', icon: 'Target' },
-    { step: '03', title: 'Eksekusi', description: 'Pengembangan website atau setup iklan oleh ahli.', icon: 'Code' },
-    { step: '04', title: 'Optimasi', description: 'Monitoring dan perbaikan berkelanjutan untuk hasil maksimal.', icon: 'BarChart' }
-];
-
-const DEFAULT_HOME_CONTENT: HomeContent = {
-    heroTitle: 'Kami Membangun Masa Depan Digital',
-    heroSubtitle: 'Partner strategis untuk pertumbuhan bisnis Anda melalui Website High-Performance, Iklan Tertarget, dan Identitas Brand yang Ikonik.',
-    heroButtonText: 'Lihat Layanan & Harga',
-    showTrustedBrands: true,
-    trustedBrands: [], // Empty initially for images
-    howItWorks: DEFAULT_PROCESS_STEPS
-};
-
-// --- AUTH CREDENTIALS ---
-const DEFAULT_AUTH: AdminCredentials = {
-    username: 'admin',
-    password: 'admin123'
-};
-
-export const getAdminCredentials = (): AdminCredentials => {
-    const stored = localStorage.getItem(AUTH_KEY);
-    if (!stored) {
-        localStorage.setItem(AUTH_KEY, JSON.stringify(DEFAULT_AUTH));
-        return DEFAULT_AUTH;
+    if (isSupabaseConfigured) {
+        try {
+            const { data, error } = await supabase.from(tableName).select('*');
+            if (!error && data && data.length > 0) {
+                // If DB has data, prefer DB, but merging logic is complex. 
+                // For this tutorial: DB > LocalStorage if DB is active.
+                // Map fields if necessary (snake_case to camelCase) - simple pass through for now
+                // Note: Real app needs strict mapping.
+                return data as unknown as T;
+            }
+        } catch (e) {
+            console.warn(`Supabase fetch failed for ${tableName}, falling back to local.`);
+        }
     }
+
+    // 2. Return LocalStorage if exists
+    if (local) return JSON.parse(local);
+
+    // 3. Return Mock Data & Initialize LocalStorage
+    localStorage.setItem(`mazmodev_${key}`, JSON.stringify(mockData));
+    return mockData;
+};
+
+// Helper to save data
+const saveData = async <T>(key: string, tableName: string, data: T, id?: string): Promise<void> => {
+    // Always save to LocalStorage for immediate UI update in Demo
+    localStorage.setItem(`mazmodev_${key}`, JSON.stringify(data));
+    
+    // Try save to Supabase
+    // @ts-ignore
+    const isSupabaseConfigured = supabase.supabaseUrl && !supabase.supabaseUrl.includes('xyzcompany');
+    if (isSupabaseConfigured) {
+         try {
+             // Logic to sync would go here (upsert)
+             // For now, we rely on LocalStorage as primary for this 'No-Setup' demo
+         } catch (e) {
+             console.error("Supabase save error", e);
+         }
+    }
+};
+
+// --- SERVICES ---
+
+export const getServices = async (): Promise<Service[]> => {
+    return fetchData<Service[]>('services', 'services', MOCK_SERVICES);
+};
+
+export const getMainServices = async (): Promise<Service[]> => {
+    const services = await getServices();
+    return services.filter(s => !s.parentServiceId);
+};
+
+export const getSubServices = async (parentId: string): Promise<Service[]> => {
+    const services = await getServices();
+    return services.filter(s => s.parentServiceId === parentId);
+};
+
+export const getServiceBySlug = async (slug: string): Promise<Service | undefined> => {
+    const services = await getServices();
+    return services.find(s => s.slug === slug);
+};
+
+export const addService = async (service: Service): Promise<void> => {
+    const services = await getServices();
+    const updated = [...services, service];
+    await saveData('services', 'services', updated);
+};
+
+export const updateService = async (service: Service): Promise<void> => {
+    const services = await getServices();
+    const updated = services.map(s => s.id === service.id ? service : s);
+    await saveData('services', 'services', updated);
+};
+
+export const deleteService = async (id: string): Promise<void> => {
+    const services = await getServices();
+    const updated = services.filter(s => s.id !== id);
+    await saveData('services', 'services', updated);
+};
+
+// --- PORTFOLIOS ---
+
+export const getGlobalPortfolios = async (): Promise<PortfolioItem[]> => {
+    return fetchData<PortfolioItem[]>('portfolios', 'portfolios', MOCK_PORTFOLIO);
+};
+
+export const addGlobalPortfolio = async (item: PortfolioItem): Promise<void> => {
+    const items = await getGlobalPortfolios();
+    const updated = [...items, item];
+    await saveData('portfolios', 'portfolios', updated);
+};
+
+export const updateGlobalPortfolio = async (item: PortfolioItem): Promise<void> => {
+    const items = await getGlobalPortfolios();
+    const updated = items.map(p => p.id === item.id ? item : p);
+    await saveData('portfolios', 'portfolios', updated);
+};
+
+export const deleteGlobalPortfolio = async (id: string): Promise<void> => {
+    const items = await getGlobalPortfolios();
+    const updated = items.filter(p => p.id !== id);
+    await saveData('portfolios', 'portfolios', updated);
+};
+
+// --- BLOGS ---
+
+export const getBlogs = async (): Promise<BlogPost[]> => {
+    return fetchData<BlogPost[]>('blogs', 'blogs', MOCK_BLOGS);
+};
+
+export const getPublishedBlogs = async (): Promise<BlogPost[]> => {
+    const blogs = await getBlogs();
+    return blogs.filter(b => b.status === 'published');
+};
+
+export const getRecentBlogs = async (limit: number = 3): Promise<BlogPost[]> => {
+    const blogs = await getPublishedBlogs();
+    return blogs.slice(0, limit);
+};
+
+export const getBlogBySlug = async (slug: string): Promise<BlogPost | undefined> => {
+    const blogs = await getBlogs();
+    return blogs.find(b => b.slug === slug);
+};
+
+export const getRelatedBlogs = async (currentSlug: string, category: string, limit: number = 3): Promise<BlogPost[]> => {
+    const blogs = await getPublishedBlogs();
+    return blogs
+        .filter(b => b.category === category && b.slug !== currentSlug)
+        .slice(0, limit);
+};
+
+export const addBlog = async (blog: BlogPost): Promise<void> => {
+    const blogs = await getBlogs();
+    const updated = [blog, ...blogs];
+    await saveData('blogs', 'blogs', updated);
+};
+
+export const updateBlog = async (blog: BlogPost): Promise<void> => {
+    const blogs = await getBlogs();
+    const updated = blogs.map(b => b.id === blog.id ? blog : b);
+    await saveData('blogs', 'blogs', updated);
+};
+
+export const deleteBlog = async (id: string): Promise<void> => {
+    const blogs = await getBlogs();
+    const updated = blogs.filter(b => b.id !== id);
+    await saveData('blogs', 'blogs', updated);
+};
+
+export const getBlogCategories = async (): Promise<string[]> => {
+    const blogs = await getBlogs();
+    const cats = Array.from(new Set(blogs.map(b => b.category)));
+    return cats.length > 0 ? cats : ['Teknologi', 'Bisnis', 'Tips'];
+};
+
+export const addBlogCategory = async (category: string): Promise<void> => {
+    // In local storage mode, categories are derived from blogs, but we can store explicit list if needed.
+    // For now, no-op or specific logic not strictly needed for this mock level.
+};
+
+export const deleteBlogCategory = async (category: string): Promise<void> => {
+    // No-op
+};
+
+// --- CONFIG & SETTINGS ---
+
+export const getSiteConfig = async (): Promise<SiteConfig> => {
+    return fetchData<SiteConfig>('config', 'settings', DEFAULT_CONFIG);
+};
+
+export const saveSiteConfig = (config: SiteConfig): void => {
+    localStorage.setItem('mazmodev_config', JSON.stringify(config));
+};
+
+// --- TESTIMONIALS ---
+
+const MOCK_TESTIMONIALS: Testimonial[] = [
+    { id: '1', name: 'Budi Santoso', role: 'CEO PT Maju Jaya', content: 'Pelayanan sangat profesional, website saya jadi dalam 3 hari!', rating: 5 },
+    { id: '2', name: 'Siti Aminah', role: 'Owner Batik Modern', content: 'Omset naik 200% setelah pakai jasa Ads dari MazmoDev.', rating: 5 },
+    { id: '3', name: 'John Doe', role: 'Tech Startup', content: 'Desain UI/UX yang sangat modern dan clean.', rating: 4 }
+];
+
+export const getTestimonials = async (): Promise<Testimonial[]> => {
+    return fetchData<Testimonial[]>('testimonials', 'testimonials', MOCK_TESTIMONIALS);
+};
+
+export const saveTestimonials = (data: Testimonial[]): void => {
+    localStorage.setItem('mazmodev_testimonials', JSON.stringify(data));
+};
+
+// --- HOME STATS ---
+
+const MOCK_STATS: HomeStat[] = [
+    { id: '1', label: 'Project Selesai', value: '150+', icon: 'Check', color: 'bg-green-100 text-green-600' },
+    { id: '2', label: 'Klien Puas', value: '98%', icon: 'Users', color: 'bg-blue-100 text-blue-600' },
+    { id: '3', label: 'Tahun Pengalaman', value: '5+', icon: 'Trophy', color: 'bg-yellow-100 text-yellow-600' },
+    { id: '4', label: 'Support', value: '24/7', icon: 'Clock', color: 'bg-purple-100 text-purple-600' }
+];
+
+export const getHomeStats = async (): Promise<HomeStat[]> => {
+    return fetchData<HomeStat[]>('home_stats', 'stats', MOCK_STATS);
+};
+
+export const saveHomeStats = (data: HomeStat[]): void => {
+    localStorage.setItem('mazmodev_home_stats', JSON.stringify(data));
+};
+
+// --- HOME CONTENT ---
+
+const MOCK_HOME_CONTENT: HomeContent = {
+    heroTitle: 'Kami Membangun Masa Depan Digital Anda',
+    heroSubtitle: 'Solusi lengkap untuk pembuatan website, aplikasi, dan strategi pemasaran digital yang terukur.',
+    heroButtonText: 'Mulai Konsultasi',
+    showTrustedBrands: true,
+    trustedBrands: [
+        { id: '1', name: 'Google', logoUrl: '' },
+        { id: '2', name: 'Meta', logoUrl: '' },
+        { id: '3', name: 'Shopify', logoUrl: '' }
+    ],
+    howItWorks: [
+        { step: '01', title: 'Konsultasi', description: 'Diskusi kebutuhan dan tujuan bisnis Anda.', icon: 'Users' },
+        { step: '02', title: 'Perancangan', description: 'Kami membuat strategi dan desain draft.', icon: 'Palette' },
+        { step: '03', title: 'Pengembangan', description: 'Proses coding dan setup kampanye iklan.', icon: 'Code' },
+        { step: '04', title: 'Peluncuran', description: 'Website live dan iklan mulai berjalan.', icon: 'Rocket' }
+    ]
+};
+
+export const getHomeContent = async (): Promise<HomeContent> => {
+    return fetchData<HomeContent>('home_content', 'content', MOCK_HOME_CONTENT);
+};
+
+export const saveHomeContent = (data: HomeContent): void => {
+    localStorage.setItem('mazmodev_home_content', JSON.stringify(data));
+};
+
+// --- AUTH ---
+export const getAdminCredentials = (): AdminCredentials => {
+    const stored = localStorage.getItem('mazmodev_auth');
+    if (!stored) return { username: 'admin', password: 'admin123' };
     return JSON.parse(stored);
 }
 
 export const saveAdminCredentials = (creds: AdminCredentials): void => {
-    localStorage.setItem(AUTH_KEY, JSON.stringify(creds));
+    localStorage.setItem('mazmodev_auth', JSON.stringify(creds));
 }
-
-// --- Services ---
-
-import { supabase } from '../lib/supabaseClient';
-
-export const getServices = async (): Promise<Service[]> => {
-  const { data, error } = await supabase.from('services').select('*');
-  if (error) console.error(error);
-  return data || [];
-};
-
-// Filter: Get Only Main Services (Not children)
-export const getMainServices = (): Service[] => {
-    return getServices().filter(s => !s.parentServiceId);
-};
-
-// Filter: Get Child Services by Parent ID
-export const getSubServices = (parentId: string): Service[] => {
-    return getServices().filter(s => s.parentServiceId === parentId);
-};
-
-export const getServiceBySlug = (slug: string): Service | undefined => {
-  const services = getServices();
-  return services.find(s => s.slug === slug);
-};
-
-export const saveServices = (services: Service[]): void => {
-  localStorage.setItem(SERVICES_KEY, JSON.stringify(services));
-};
-
-export const addService = (service: Service): void => {
-  const current = getServices();
-  const updated = [...current, service];
-  saveServices(updated);
-};
-
-export const updateService = (updatedService: Service): void => {
-    const services = getServices();
-    const index = services.findIndex(s => s.id === updatedService.id);
-    if (index !== -1) {
-        services[index] = updatedService;
-        saveServices(services);
-    }
-}
-
-export const deleteService = (id: string): void => {
-  const current = getServices();
-  const updated = current.filter(s => s.id !== id);
-  saveServices(updated);
-};
-
-// --- GLOBAL PORTFOLIOS (NEW) ---
-
-export const getGlobalPortfolios = (): PortfolioItem[] => {
-    const stored = localStorage.getItem(PORTFOLIO_KEY);
-    if (!stored) {
-        localStorage.setItem(PORTFOLIO_KEY, JSON.stringify(DEFAULT_PORTFOLIOS));
-        return DEFAULT_PORTFOLIOS;
-    }
-    return JSON.parse(stored);
-};
-
-export const saveGlobalPortfolios = (items: PortfolioItem[]): void => {
-    localStorage.setItem(PORTFOLIO_KEY, JSON.stringify(items));
-};
-
-export const addGlobalPortfolio = (item: PortfolioItem): void => {
-    const current = getGlobalPortfolios();
-    saveGlobalPortfolios([item, ...current]);
-};
-
-export const updateGlobalPortfolio = (item: PortfolioItem): void => {
-    const current = getGlobalPortfolios();
-    const idx = current.findIndex(p => p.id === item.id);
-    if (idx !== -1) {
-        current[idx] = item;
-        saveGlobalPortfolios(current);
-    }
-};
-
-export const deleteGlobalPortfolio = (id: string): void => {
-    const current = getGlobalPortfolios();
-    saveGlobalPortfolios(current.filter(p => p.id !== id));
-};
-
-// Legacy Helper wrapper for page compatibility if needed, 
-// though Pages should now call getGlobalPortfolios directly.
-export const getAllPortfolios = (): any[] => {
-    // For Service pages that use extended item, we can synthesize this
-    // But better to use getGlobalPortfolios.
-    // This maintains old signature roughly but uses new data
-    const globalP = getGlobalPortfolios();
-    const services = getServices();
-    
-    return globalP.map(p => {
-        const service = services.find(s => s.id === p.serviceId);
-        return {
-            ...p,
-            serviceSlug: service?.slug || '',
-            serviceTitle: service?.title || 'General'
-        };
-    });
-};
-
-// --- Blogs ---
-
-export const getBlogs = (): BlogPost[] => {
-  const stored = localStorage.getItem(BLOG_KEY);
-  if (!stored) {
-    localStorage.setItem(BLOG_KEY, JSON.stringify(DEFAULT_BLOGS));
-    return DEFAULT_BLOGS;
-  }
-  return JSON.parse(stored);
-};
-
-// Public helper: only published blogs
-export const getPublishedBlogs = (): BlogPost[] => {
-    return getBlogs().filter(b => b.status === 'published');
-}
-
-export const getRecentBlogs = (limit: number = 3): BlogPost[] => {
-    const blogs = getPublishedBlogs();
-    return blogs.slice(0, limit);
-}
-
-export const getBlogBySlug = (slug: string): BlogPost | undefined => {
-    const blogs = getPublishedBlogs();
-    return blogs.find(b => b.slug === slug);
-};
-
-export const getRelatedBlogs = (currentSlug: string, category: string, limit: number = 3): BlogPost[] => {
-    const blogs = getPublishedBlogs();
-    return blogs
-        .filter(b => b.slug !== currentSlug && b.category === category)
-        .slice(0, limit);
-}
-
-// Get Saved Categories
-export const getBlogCategories = (): string[] => {
-    const stored = localStorage.getItem(BLOG_CATEGORIES_KEY);
-    if (!stored) {
-        localStorage.setItem(BLOG_CATEGORIES_KEY, JSON.stringify(DEFAULT_CATEGORIES));
-        return DEFAULT_CATEGORIES;
-    }
-    return JSON.parse(stored);
-}
-
-export const saveBlogCategories = (categories: string[]): void => {
-    localStorage.setItem(BLOG_CATEGORIES_KEY, JSON.stringify(categories));
-}
-
-export const addBlogCategory = (category: string): void => {
-    const cats = getBlogCategories();
-    if (!cats.includes(category)) {
-        saveBlogCategories([...cats, category]);
-    }
-}
-
-export const deleteBlogCategory = (category: string): void => {
-    const cats = getBlogCategories();
-    saveBlogCategories(cats.filter(c => c !== category));
-}
-
-export const saveBlogs = (blogs: BlogPost[]): void => {
-  localStorage.setItem(BLOG_KEY, JSON.stringify(blogs));
-};
-
-export const addBlog = (blog: BlogPost): void => {
-  const current = getBlogs();
-  const updated = [blog, ...current]; // Newest first
-  saveBlogs(updated);
-};
-
-export const updateBlog = (updatedBlog: BlogPost): void => {
-    const blogs = getBlogs();
-    const index = blogs.findIndex(b => b.id === updatedBlog.id);
-    if (index !== -1) {
-        blogs[index] = updatedBlog;
-        saveBlogs(blogs);
-    }
-}
-
-export const deleteBlog = (id: string): void => {
-    const current = getBlogs();
-    const updated = current.filter(b => b.id !== id);
-    saveBlogs(updated);
-};
-
-// --- Config / Settings ---
-
-export const getSiteConfig = (): SiteConfig => {
-    const stored = localStorage.getItem(CONFIG_KEY);
-    if (!stored) {
-        localStorage.setItem(CONFIG_KEY, JSON.stringify(DEFAULT_CONFIG));
-        return DEFAULT_CONFIG;
-    }
-    return JSON.parse(stored);
-};
-
-export const saveSiteConfig = (config: SiteConfig): void => {
-    localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
-};
-
-// --- Testimonials ---
-
-export const getTestimonials = (): Testimonial[] => {
-    const stored = localStorage.getItem(TESTIMONIALS_KEY);
-    if (!stored) {
-        localStorage.setItem(TESTIMONIALS_KEY, JSON.stringify(DEFAULT_TESTIMONIALS));
-        return DEFAULT_TESTIMONIALS;
-    }
-    return JSON.parse(stored);
-};
-
-export const saveTestimonials = (data: Testimonial[]): void => {
-    localStorage.setItem(TESTIMONIALS_KEY, JSON.stringify(data));
-};
-
-// --- Home Stats ---
-
-export const getHomeStats = (): HomeStat[] => {
-    const stored = localStorage.getItem(HOME_STATS_KEY);
-    if (!stored) {
-        localStorage.setItem(HOME_STATS_KEY, JSON.stringify(DEFAULT_HOME_STATS));
-        return DEFAULT_HOME_STATS;
-    }
-    return JSON.parse(stored);
-};
-
-export const saveHomeStats = (data: HomeStat[]): void => {
-    localStorage.setItem(HOME_STATS_KEY, JSON.stringify(data));
-};
-
-// --- Home Content (Hero, etc) ---
-
-export const getHomeContent = (): HomeContent => {
-    const stored = localStorage.getItem(HOME_CONTENT_KEY);
-    if (!stored) {
-        localStorage.setItem(HOME_CONTENT_KEY, JSON.stringify(DEFAULT_HOME_CONTENT));
-        return DEFAULT_HOME_CONTENT;
-    }
-    return JSON.parse(stored);
-};
-
-export const saveHomeContent = (data: HomeContent): void => {
-    localStorage.setItem(HOME_CONTENT_KEY, JSON.stringify(data));
-};

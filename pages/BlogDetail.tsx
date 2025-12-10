@@ -1,5 +1,4 @@
 
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getBlogBySlug, getRelatedBlogs } from '../services/dataService';
@@ -13,14 +12,18 @@ export const BlogDetail: React.FC = () => {
   const [relatedBlogs, setRelatedBlogs] = useState<BlogPost[]>([]);
 
   useEffect(() => {
-    if (slug) {
-      const found = getBlogBySlug(slug);
-      setBlog(found);
-      if (found) {
-          setRelatedBlogs(getRelatedBlogs(found.slug, found.category));
-      }
-      window.scrollTo(0, 0);
-    }
+    const loadData = async () => {
+        if (slug) {
+            const found = await getBlogBySlug(slug);
+            setBlog(found);
+            if (found) {
+                const related = await getRelatedBlogs(found.slug, found.category);
+                setRelatedBlogs(related);
+            }
+            window.scrollTo(0, 0);
+        }
+    };
+    loadData();
   }, [slug]);
 
   if (!blog) return (

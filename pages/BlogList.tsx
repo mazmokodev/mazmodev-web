@@ -1,5 +1,4 @@
 
-
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getPublishedBlogs, getBlogCategories } from '../services/dataService';
@@ -10,13 +9,21 @@ export const BlogList: React.FC = () => {
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     document.title = "Blog & Artikel - MazmoDev";
-    // Using getPublishedBlogs to hide drafts
-    const allBlogs = getPublishedBlogs();
-    setBlogs(allBlogs);
-    setCategories(['All', ...getBlogCategories()]);
+    const fetch = async () => {
+        setLoading(true);
+        const [allBlogs, allCats] = await Promise.all([
+            getPublishedBlogs(),
+            getBlogCategories()
+        ]);
+        setBlogs(allBlogs);
+        setCategories(['All', ...allCats]);
+        setLoading(false);
+    }
+    fetch();
   }, []);
 
   const filteredBlogs = selectedCategory === 'All' 
@@ -50,7 +57,11 @@ export const BlogList: React.FC = () => {
             ))}
         </div>
 
-        {filteredBlogs.length > 0 ? (
+        {loading ? (
+             <div className="flex justify-center py-20">
+                 <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+             </div>
+        ) : filteredBlogs.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredBlogs.map((blog) => (
                 <article key={blog.id} className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-800 overflow-hidden hover:shadow-xl transition-all hover:-translate-y-1 flex flex-col h-full group">

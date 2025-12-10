@@ -1,5 +1,4 @@
 
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getServiceBySlug, getServices, getSubServices } from '../services/dataService';
@@ -17,26 +16,30 @@ export const ServiceDetail: React.FC = () => {
   const { getWhatsappLink } = useConfig();
 
   useEffect(() => {
-    if (slug) {
-      const found = getServiceBySlug(slug);
-      setService(found);
-      
-      if (found) {
-          // Explicit Sub-Service Logic
-          // 1. Get explicit children (Services that have this service ID as parent)
-          const explicitChildren = getSubServices(found.id);
-          
-          // 2. If this IS a sub-service, show siblings (same parent) to allow navigation
-          let explicitSiblings: Service[] = [];
-          if (found.parentServiceId) {
-              explicitSiblings = getSubServices(found.parentServiceId).filter(s => s.id !== found.id);
-          }
+    const loadData = async () => {
+      if (slug) {
+        const found = await getServiceBySlug(slug);
+        setService(found);
+        
+        if (found) {
+            // Explicit Sub-Service Logic
+            // 1. Get explicit children (Services that have this service ID as parent)
+            const explicitChildren = await getSubServices(found.id);
+            
+            // 2. If this IS a sub-service, show siblings (same parent) to allow navigation
+            let explicitSiblings: Service[] = [];
+            if (found.parentServiceId) {
+                const siblings = await getSubServices(found.parentServiceId);
+                explicitSiblings = siblings.filter(s => s.id !== found.id);
+            }
 
-          setRelatedServices([...explicitChildren, ...explicitSiblings]);
+            setRelatedServices([...explicitChildren, ...explicitSiblings]);
+        }
+        
+        window.scrollTo(0, 0);
       }
-      
-      window.scrollTo(0, 0);
-    }
+    };
+    loadData();
   }, [slug]);
 
   if (!service) {

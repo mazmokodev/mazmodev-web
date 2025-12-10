@@ -1,5 +1,4 @@
 
-
 import React, { useEffect, useState } from 'react';
 import { getGlobalPortfolios } from '../services/dataService';
 import { PortfolioItem } from '../types';
@@ -10,9 +9,16 @@ import { ScrollReveal } from '../components/ScrollReveal';
 export const Portfolio: React.FC = () => {
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [lightboxImage, setLightboxImage] = useState<PortfolioItem | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setItems(getGlobalPortfolios());
+    const fetch = async () => {
+      setLoading(true);
+      const data = await getGlobalPortfolios();
+      setItems(data);
+      setLoading(false);
+    };
+    fetch();
   }, []);
 
   return (
@@ -32,8 +38,12 @@ export const Portfolio: React.FC = () => {
             </p>
             </div>
         </ScrollReveal>
-
-        {items.length > 0 ? (
+        
+        {loading ? (
+             <div className="flex justify-center py-20">
+                 <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+             </div>
+        ) : items.length > 0 ? (
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                 {items.map((item, idx) => (
                     <ScrollReveal key={idx} delay={idx * 100} className="h-full">

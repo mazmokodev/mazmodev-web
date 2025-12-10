@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getServiceBySlug, getBlogBySlug } from '../services/dataService';
 import { ServiceDetail } from './ServiceDetail';
@@ -8,20 +8,45 @@ import { SEO } from '../components/SEO';
 
 export const PageResolver: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
+  const [loading, setLoading] = useState(true);
+  const [type, setType] = useState<'service' | 'blog' | '404'>('404');
 
-  // 1. Check if it's a Service
-  const service = slug ? getServiceBySlug(slug) : undefined;
-  if (service) {
-    return <ServiceDetail />;
+  useEffect(() => {
+    const resolve = async () => {
+        if (!slug) return;
+        setLoading(true);
+        
+        // Parallel check (optimization)
+        const [service, blog] = await Promise.all([
+            getServiceBySlug(slug),
+            getBlogBySlug(slug)
+        ]);
+
+        if (service) {
+            setType('service');
+        } else if (blog) {
+            setType('blog');
+        } else {
+            setType('404');
+        }
+        setLoading(false);
+    };
+
+    resolve();
+  }, [slug]);
+
+  if (loading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950">
+            <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      );
   }
 
-  // 2. Check if it's a Blog
-  const blog = slug ? getBlogBySlug(slug) : undefined;
-  if (blog) {
-    return <BlogDetail />;
-  }
+  if (type === 'service') return <ServiceDetail />;
+  if (type === 'blog') return <BlogDetail />;
 
-  // 3. Not Found
+  // 404
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 flex-col px-4 text-center">
         <SEO title="Halaman Tidak Ditemukan" description="Halaman yang Anda cari tidak tersedia." />
