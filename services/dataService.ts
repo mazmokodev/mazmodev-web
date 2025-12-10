@@ -250,13 +250,12 @@ export const saveAdminCredentials = (creds: AdminCredentials): void => {
 
 // --- Services ---
 
-export const getServices = (): Service[] => {
-  const stored = localStorage.getItem(SERVICES_KEY);
-  if (!stored) {
-    localStorage.setItem(SERVICES_KEY, JSON.stringify(DEFAULT_SERVICES));
-    return DEFAULT_SERVICES;
-  }
-  return JSON.parse(stored);
+import { supabase } from '../lib/supabaseClient';
+
+export const getServices = async (): Promise<Service[]> => {
+  const { data, error } = await supabase.from('services').select('*');
+  if (error) console.error(error);
+  return data || [];
 };
 
 // Filter: Get Only Main Services (Not children)
