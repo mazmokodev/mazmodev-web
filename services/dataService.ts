@@ -2,8 +2,10 @@
 import { supabase } from '../lib/supabaseClient';
 import { Service, BlogPost, SiteConfig, PortfolioItem, Testimonial, HomeStat, HomeContent, AdminCredentials } from '../types';
 
-// --- MOCK DATA INITIALIZATION ---
-// This data is used when the database connection fails or is not set up.
+// ==========================================
+// MOCK DATA (DATA DUMMY)
+// Digunakan jika database belum konek
+// ==========================================
 
 const MOCK_SERVICES: Service[] = [
   {
@@ -12,26 +14,26 @@ const MOCK_SERVICES: Service[] = [
     slug: 'jasa-pembuatan-website',
     iconName: 'Globe',
     shortDescription: 'Website profesional, cepat, dan SEO friendly yang dirancang untuk mengonversi pengunjung menjadi pelanggan.',
-    fullDescription: '<p>Kami membangun website yang tidak hanya indah dipandang tetapi juga berorientasi pada performa dan penjualan. Menggunakan teknologi terbaru seperti React dan Tailwind CSS.</p>',
+    fullDescription: '<p>Kami membangun website yang tidak hanya indah dipandang tetapi juga berorientasi pada performa dan penjualan. Menggunakan teknologi terbaru seperti React dan Tailwind CSS.</p><p>Cocok untuk UMKM, Company Profile, hingga Toko Online.</p>',
     seoTitle: 'Jasa Pembuatan Website Profesional & SEO Friendly',
     seoKeywords: ['jasa website', 'buat website', 'web developer indonesia'],
     features: [
       { title: 'Responsive Design', description: 'Tampil sempurna di Desktop, Tablet, dan Mobile.', icon: 'LayoutDashboard' },
-      { title: 'SEO Optimized', description: 'Struktur kode yang disukai Google.', icon: 'Search' },
+      { title: 'SEO Optimized', description: 'Struktur kode yang disukai Google agar mudah ranking 1.', icon: 'Search' },
       { title: 'Fast Loading', description: 'Optimasi kecepatan untuk user experience terbaik.', icon: 'Zap' }
     ],
     benefits: [
-      { title: 'Kredibilitas Meningkat', description: 'Bisnis terlihat lebih profesional dan terpercaya.' },
-      { title: 'Jangkauan Luas', description: 'Dapat diakses oleh pelanggan dari seluruh dunia 24/7.' }
+      { title: 'Kredibilitas Meningkat', description: 'Bisnis terlihat lebih profesional dan terpercaya di mata calon customer.' },
+      { title: 'Jangkauan Luas', description: 'Dapat diakses oleh pelanggan dari seluruh dunia 24/7 tanpa henti.' }
     ],
     plans: [
         { id: 'p1', name: 'Landing Page', price: 'Rp 1.500.000', features: [{ text: 'One Page Design', included: true }, { text: 'Mobile Friendly', included: true }, { text: 'Free Domain .com', included: true }], recommended: false },
-        { id: 'p2', name: 'Company Profile', price: 'Rp 3.500.000', features: [{ text: '5 Halaman', included: true }, { text: 'CMS Admin', included: true }, { text: 'SEO Basic', included: true }], recommended: true },
+        { id: 'p2', name: 'Company Profile', price: 'Rp 3.500.000', features: [{ text: '5 Halaman', included: true }, { text: 'CMS Admin', included: true }, { text: 'SEO Basic', included: true }, { text: 'Email Bisnis', included: true }], recommended: true },
         { id: 'p3', name: 'Toko Online', price: 'Rp 5.000.000', features: [{ text: 'Integrasi Payment', included: true }, { text: 'Manajemen Produk', included: true }, { text: 'Laporan Penjualan', included: true }], recommended: false }
     ],
     faqs: [
-        { question: 'Berapa lama proses pembuatan?', answer: 'Tergantung kompleksitas, rata-rata 3-7 hari kerja.' },
-        { question: 'Apakah dapat revisi?', answer: 'Ya, kami memberikan kesempatan revisi mayor 2x dan minor sepuasnya.' }
+        { question: 'Berapa lama proses pembuatan?', answer: 'Tergantung kompleksitas, rata-rata 3-7 hari kerja untuk Landing Page dan 7-14 hari untuk Company Profile.' },
+        { question: 'Apakah dapat revisi?', answer: 'Ya, kami memberikan kesempatan revisi mayor 2x dan revisi minor sepuasnya sebelum finalisasi.' }
     ],
     portfolio: []
   },
@@ -41,10 +43,10 @@ const MOCK_SERVICES: Service[] = [
     slug: 'jasa-digital-marketing',
     iconName: 'Megaphone',
     shortDescription: 'Tingkatkan penjualan secara instan dengan strategi iklan Facebook & Google Ads yang tertarget.',
-    fullDescription: '<p>Jangkau audiens yang tepat di waktu yang tepat. Kami mengelola budget iklan Anda untuk menghasilkan ROI maksimal.</p>',
+    fullDescription: '<p>Jangkau audiens yang tepat di waktu yang tepat. Kami mengelola budget iklan Anda untuk menghasilkan ROI (Return on Investment) maksimal.</p>',
     features: [
-        { title: 'Targeting Akurat', description: 'Menjangkau pelanggan ideal Anda.', icon: 'Target' },
-        { title: 'Laporan Harian', description: 'Transparansi data performa iklan.', icon: 'BarChart' }
+        { title: 'Targeting Akurat', description: 'Menjangkau pelanggan ideal berdasarkan lokasi, minat, dan perilaku.', icon: 'Target' },
+        { title: 'Laporan Harian', description: 'Transparansi data performa iklan yang real-time.', icon: 'BarChart' }
     ],
     benefits: [],
     plans: [
@@ -59,7 +61,7 @@ const MOCK_SERVICES: Service[] = [
     slug: 'jasa-branding',
     iconName: 'Palette',
     shortDescription: 'Ciptakan identitas brand yang kuat dan mudah diingat oleh pelanggan Anda.',
-    fullDescription: '<p>Dari desain logo hingga panduan visual lengkap. Kami membantu brand Anda bercerita.</p>',
+    fullDescription: '<p>Dari desain logo hingga panduan visual lengkap. Kami membantu brand Anda bercerita melalui visual yang memukau.</p>',
     features: [], benefits: [], plans: [], faqs: [], portfolio: []
   }
 ];
@@ -71,7 +73,7 @@ const MOCK_BLOGS: BlogPost[] = [
         slug: 'alasan-bisnis-perlu-website',
         category: 'Bisnis',
         summary: 'Mengapa kehadiran digital sangat krusial untuk kelangsungan bisnis modern.',
-        content: '<p>Di era digital ini, website bukan lagi opsi, melainkan kebutuhan...</p>',
+        content: '<p>Di era digital ini, website bukan lagi opsi, melainkan kebutuhan. Pelanggan mencari produk dan jasa melalui Google sebelum memutuskan membeli.</p><h2>1. Kredibilitas</h2><p>Website membuat bisnis Anda terlihat resmi.</p>',
         author: 'Admin',
         date: '2024-03-15',
         imageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
@@ -84,7 +86,7 @@ const MOCK_BLOGS: BlogPost[] = [
         slug: 'cara-optimasi-seo-pemula',
         category: 'Teknologi',
         summary: 'Panduan dasar agar website Anda muncul di halaman pertama Google.',
-        content: '<p>SEO adalah seni mendatangkan pengunjung secara gratis...</p>',
+        content: '<p>SEO adalah seni mendatangkan pengunjung secara gratis. Mulai dengan riset keyword yang tepat...</p>',
         author: 'Mazmo Team',
         date: '2024-03-10',
         imageUrl: 'https://images.unsplash.com/photo-1571721795195-a2ca2d337096?auto=format&fit=crop&w=800&q=80',
@@ -107,14 +109,47 @@ const DEFAULT_CONFIG: SiteConfig = {
     instagram: 'https://instagram.com', linkedin: '', facebook: '', youtube: '', tiktok: ''
 };
 
-// --- DATA SERVICE LOGIC (MIXED MODE: SUPABASE -> LOCALSTORAGE -> MOCK) ---
+const MOCK_TESTIMONIALS: Testimonial[] = [
+    { id: '1', name: 'Budi Santoso', role: 'CEO PT Maju Jaya', content: 'Pelayanan sangat profesional, website saya jadi dalam 3 hari!', rating: 5 },
+    { id: '2', name: 'Siti Aminah', role: 'Owner Batik Modern', content: 'Omset naik 200% setelah pakai jasa Ads dari MazmoDev.', rating: 5 },
+    { id: '3', name: 'John Doe', role: 'Tech Startup', content: 'Desain UI/UX yang sangat modern dan clean.', rating: 4 }
+];
 
-// Helper to safely get data
+const MOCK_STATS: HomeStat[] = [
+    { id: '1', label: 'Project Selesai', value: '150+', icon: 'Check', color: 'bg-green-100 text-green-600' },
+    { id: '2', label: 'Klien Puas', value: '98%', icon: 'Users', color: 'bg-blue-100 text-blue-600' },
+    { id: '3', label: 'Tahun Pengalaman', value: '5+', icon: 'Trophy', color: 'bg-yellow-100 text-yellow-600' },
+    { id: '4', label: 'Support', value: '24/7', icon: 'Clock', color: 'bg-purple-100 text-purple-600' }
+];
+
+const MOCK_HOME_CONTENT: HomeContent = {
+    heroTitle: 'Kami Membangun Masa Depan Digital Anda',
+    heroSubtitle: 'Solusi lengkap untuk pembuatan website, aplikasi, dan strategi pemasaran digital yang terukur.',
+    heroButtonText: 'Mulai Konsultasi',
+    showTrustedBrands: true,
+    trustedBrands: [
+        { id: '1', name: 'Google', logoUrl: '' },
+        { id: '2', name: 'Meta', logoUrl: '' },
+        { id: '3', name: 'Shopify', logoUrl: '' }
+    ],
+    howItWorks: [
+        { step: '01', title: 'Konsultasi', description: 'Diskusi kebutuhan dan tujuan bisnis Anda.', icon: 'Users' },
+        { step: '02', title: 'Perancangan', description: 'Kami membuat strategi dan desain draft.', icon: 'Palette' },
+        { step: '03', title: 'Pengembangan', description: 'Proses coding dan setup kampanye iklan.', icon: 'Code' },
+        { step: '04', title: 'Peluncuran', description: 'Website live dan iklan mulai berjalan.', icon: 'Rocket' }
+    ]
+};
+
+// ==========================================
+// CORE LOGIC (Hybrid System)
+// ==========================================
+
+// Helper: Ambil data (Cek LocalStorage -> Cek Supabase -> Pakai Mock)
 const fetchData = async <T>(key: string, tableName: string, mockData: T): Promise<T> => {
-    // 1. Try LocalStorage First (Prioritize local edits in demo mode)
+    // 1. Prioritas 1: LocalStorage (Agar editan di admin panel tersimpan di browser)
     const local = localStorage.getItem(`mazmodev_${key}`);
     
-    // Check if Supabase is configured (rudimentary check on URL placeholder)
+    // 2. Cek apakah Supabase sudah dikonfigurasi dengan benar (Bukan default URL)
     // @ts-ignore
     const isSupabaseConfigured = supabase.supabaseUrl && !supabase.supabaseUrl.includes('xyzcompany');
 
@@ -122,45 +157,47 @@ const fetchData = async <T>(key: string, tableName: string, mockData: T): Promis
         try {
             const { data, error } = await supabase.from(tableName).select('*');
             if (!error && data && data.length > 0) {
-                // If DB has data, prefer DB, but merging logic is complex. 
-                // For this tutorial: DB > LocalStorage if DB is active.
-                // Map fields if necessary (snake_case to camelCase) - simple pass through for now
-                // Note: Real app needs strict mapping.
+                // Jika database ada isinya, pakai data database
+                // Kita juga simpan ke local storage agar sinkron
+                localStorage.setItem(`mazmodev_${key}`, JSON.stringify(data));
                 return data as unknown as T;
             }
         } catch (e) {
-            console.warn(`Supabase fetch failed for ${tableName}, falling back to local.`);
+            console.warn(`Supabase fetch failed for ${tableName}, using fallback.`);
         }
     }
 
-    // 2. Return LocalStorage if exists
+    // 3. Jika LocalStorage ada, kembalikan itu
     if (local) return JSON.parse(local);
 
-    // 3. Return Mock Data & Initialize LocalStorage
+    // 4. Jika semua kosong, inisialisasi dengan Mock Data
     localStorage.setItem(`mazmodev_${key}`, JSON.stringify(mockData));
     return mockData;
 };
 
-// Helper to save data
+// Helper: Simpan data
 const saveData = async <T>(key: string, tableName: string, data: T, id?: string): Promise<void> => {
-    // Always save to LocalStorage for immediate UI update in Demo
+    // 1. Selalu simpan ke LocalStorage (UI Update Instant)
     localStorage.setItem(`mazmodev_${key}`, JSON.stringify(data));
     
-    // Try save to Supabase
+    // 2. Coba simpan ke Supabase jika ada
     // @ts-ignore
     const isSupabaseConfigured = supabase.supabaseUrl && !supabase.supabaseUrl.includes('xyzcompany');
     if (isSupabaseConfigured) {
          try {
-             // Logic to sync would go here (upsert)
-             // For now, we rely on LocalStorage as primary for this 'No-Setup' demo
+             // Logic sinkronisasi ke DB bisa ditambahkan di sini
+             // Untuk versi ini, kita biarkan silent fail agar user tidak terganggu error
          } catch (e) {
              console.error("Supabase save error", e);
          }
     }
 };
 
-// --- SERVICES ---
+// ==========================================
+// EXPORTED SERVICES
+// ==========================================
 
+// --- SERVICES ---
 export const getServices = async (): Promise<Service[]> => {
     return fetchData<Service[]>('services', 'services', MOCK_SERVICES);
 };
@@ -199,7 +236,6 @@ export const deleteService = async (id: string): Promise<void> => {
 };
 
 // --- PORTFOLIOS ---
-
 export const getGlobalPortfolios = async (): Promise<PortfolioItem[]> => {
     return fetchData<PortfolioItem[]>('portfolios', 'portfolios', MOCK_PORTFOLIO);
 };
@@ -223,7 +259,6 @@ export const deleteGlobalPortfolio = async (id: string): Promise<void> => {
 };
 
 // --- BLOGS ---
-
 export const getBlogs = async (): Promise<BlogPost[]> => {
     return fetchData<BlogPost[]>('blogs', 'blogs', MOCK_BLOGS);
 };
@@ -275,8 +310,7 @@ export const getBlogCategories = async (): Promise<string[]> => {
 };
 
 export const addBlogCategory = async (category: string): Promise<void> => {
-    // In local storage mode, categories are derived from blogs, but we can store explicit list if needed.
-    // For now, no-op or specific logic not strictly needed for this mock level.
+    // No-op untuk mock
 };
 
 export const deleteBlogCategory = async (category: string): Promise<void> => {
@@ -284,7 +318,6 @@ export const deleteBlogCategory = async (category: string): Promise<void> => {
 };
 
 // --- CONFIG & SETTINGS ---
-
 export const getSiteConfig = async (): Promise<SiteConfig> => {
     return fetchData<SiteConfig>('config', 'settings', DEFAULT_CONFIG);
 };
@@ -294,13 +327,6 @@ export const saveSiteConfig = (config: SiteConfig): void => {
 };
 
 // --- TESTIMONIALS ---
-
-const MOCK_TESTIMONIALS: Testimonial[] = [
-    { id: '1', name: 'Budi Santoso', role: 'CEO PT Maju Jaya', content: 'Pelayanan sangat profesional, website saya jadi dalam 3 hari!', rating: 5 },
-    { id: '2', name: 'Siti Aminah', role: 'Owner Batik Modern', content: 'Omset naik 200% setelah pakai jasa Ads dari MazmoDev.', rating: 5 },
-    { id: '3', name: 'John Doe', role: 'Tech Startup', content: 'Desain UI/UX yang sangat modern dan clean.', rating: 4 }
-];
-
 export const getTestimonials = async (): Promise<Testimonial[]> => {
     return fetchData<Testimonial[]>('testimonials', 'testimonials', MOCK_TESTIMONIALS);
 };
@@ -310,14 +336,6 @@ export const saveTestimonials = (data: Testimonial[]): void => {
 };
 
 // --- HOME STATS ---
-
-const MOCK_STATS: HomeStat[] = [
-    { id: '1', label: 'Project Selesai', value: '150+', icon: 'Check', color: 'bg-green-100 text-green-600' },
-    { id: '2', label: 'Klien Puas', value: '98%', icon: 'Users', color: 'bg-blue-100 text-blue-600' },
-    { id: '3', label: 'Tahun Pengalaman', value: '5+', icon: 'Trophy', color: 'bg-yellow-100 text-yellow-600' },
-    { id: '4', label: 'Support', value: '24/7', icon: 'Clock', color: 'bg-purple-100 text-purple-600' }
-];
-
 export const getHomeStats = async (): Promise<HomeStat[]> => {
     return fetchData<HomeStat[]>('home_stats', 'stats', MOCK_STATS);
 };
@@ -327,25 +345,6 @@ export const saveHomeStats = (data: HomeStat[]): void => {
 };
 
 // --- HOME CONTENT ---
-
-const MOCK_HOME_CONTENT: HomeContent = {
-    heroTitle: 'Kami Membangun Masa Depan Digital Anda',
-    heroSubtitle: 'Solusi lengkap untuk pembuatan website, aplikasi, dan strategi pemasaran digital yang terukur.',
-    heroButtonText: 'Mulai Konsultasi',
-    showTrustedBrands: true,
-    trustedBrands: [
-        { id: '1', name: 'Google', logoUrl: '' },
-        { id: '2', name: 'Meta', logoUrl: '' },
-        { id: '3', name: 'Shopify', logoUrl: '' }
-    ],
-    howItWorks: [
-        { step: '01', title: 'Konsultasi', description: 'Diskusi kebutuhan dan tujuan bisnis Anda.', icon: 'Users' },
-        { step: '02', title: 'Perancangan', description: 'Kami membuat strategi dan desain draft.', icon: 'Palette' },
-        { step: '03', title: 'Pengembangan', description: 'Proses coding dan setup kampanye iklan.', icon: 'Code' },
-        { step: '04', title: 'Peluncuran', description: 'Website live dan iklan mulai berjalan.', icon: 'Rocket' }
-    ]
-};
-
 export const getHomeContent = async (): Promise<HomeContent> => {
     return fetchData<HomeContent>('home_content', 'content', MOCK_HOME_CONTENT);
 };
